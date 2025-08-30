@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUXVEST Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'hsl(222, 84%, 5%)',
+                        foreground: 'hsl(210, 40%, 98%)',
+                        card: 'hsl(222, 84%, 8%)',
+                        'card-foreground': 'hsl(210, 40%, 98%)',
+                        primary: 'hsl(217, 91%, 60%)',
+                        'primary-foreground': 'hsl(222, 84%, 5%)',
+                        secondary: 'hsl(217, 32%, 17%)',
+                        'secondary-foreground': 'hsl(210, 40%, 98%)',
+                        muted: 'hsl(217, 32%, 17%)',
+                        'muted-foreground': 'hsl(215, 20%, 65%)',
+                        accent: 'hsl(217, 32%, 17%)',
+                        'accent-foreground': 'hsl(210, 40%, 98%)',
+                        destructive: 'hsl(0, 62%, 60%)',
+                        border: 'hsl(217, 32%, 17%)',
+                        input: 'hsl(217, 32%, 17%)',
+                        ring: 'hsl(217, 91%, 60%)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        @keyframes slideShow {
+            0%, 30% { opacity: 1; }
+            33%, 97% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        .marquee {
+            animation: marquee 30s linear infinite;
+        }
+        
+        .slide-container {
+            animation: slideShow 9s infinite;
+        }
+        
+        .modal-backdrop {
+            backdrop-filter: blur(8px);
+        }
+        
+        .hidden { display: none !important; }
+        .block { display: block !important; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: hsl(217, 32%, 17%);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: hsl(217, 91%, 60%);
+            border-radius: 4px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="dark min-h-screen" style="background-color: hsl(222, 84%, 5%); color: hsl(210, 40%, 98%);">
+    <!-- Sidebar Toggle Button -->
+    <button onclick="toggleSidebar()" class="fixed top-4 left-4 z-50 p-2 rounded-md" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" x2="20" y1="6" y2="6"></line>
+            <line x1="4" x2="20" y1="12" y2="12"></line>
+            <line x1="4" x2="20" y1="18" y2="18"></line>
+        </svg>
+    </button>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed left-0 top-0 h-full w-64 transform transition-transform duration-300 z-40 -translate-x-full" style="background-color: hsl(222, 84%, 8%); border-right: 1px solid hsl(217, 32%, 17%);">
+        <!-- Backdrop -->
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-black/50 z-30 hidden" onclick="closeSidebar()"></div>
+        
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-bold" style="color: hsl(210, 40%, 98%);">LUXVEST Admin</h2>
+                <button onclick="closeSidebar()" class="p-2 rounded-md hover:bg-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m18 6-12 12"></path>
+                        <path d="m6 6 12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <nav class="space-y-2">
+                <button onclick="closeSidebar()" class="w-full flex items-center justify-start p-3 rounded-md text-left" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                    </svg>
+                    Home
+                </button>
+                
+                <button onclick="openModal('editMarquee')" class="w-full flex items-center justify-start p-3 rounded-md text-left hover:bg-secondary" style="color: hsl(215, 20%, 65%);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Edit Moving Text
+                </button>
+                
+                <button onclick="openModal('editSlide')" class="w-full flex items-center justify-start p-3 rounded-md text-left hover:bg-secondary" style="color: hsl(215, 20%, 65%);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3">
+                        <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                        <circle cx="9" cy="9" r="2"></circle>
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                    </svg>
+                    Edit Slide Box
+                </button>
+                
+                <button onclick="openModal('changePassword')" class="w-full flex items-center justify-start p-3 rounded-md text-left hover:bg-secondary" style="color: hsl(215, 20%, 65%);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3">
+                        <circle cx="7" cy="12" r="3"></circle>
+                        <path d="m10 12 14-4-4 14L7 9l5-5"></path>
+                    </svg>
+                    Change Password
+                </button>
+                
+                <button onclick="openModal('allHistory')" class="w-full flex items-center justify-start p-3 rounded-md text-left hover:bg-secondary" style="color: hsl(215, 20%, 65%);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                        <path d="M3 3v5h5"></path>
+                        <path d="M12 7v5l4 2"></path>
+                    </svg>
+                    All History
+                </button>
+                
+                <button onclick="openModal('about')" class="w-full flex items-center justify-start p-3 rounded-md text-left hover:bg-secondary" style="color: hsl(215, 20%, 65%);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="m9 12 2 2 4-4"></path>
+                    </svg>
+                    About
+                </button>
+                
+                <button onclick="logout()" class="w-full flex items-center justify-start p-3 rounded-md text-left" style="color: hsl(0, 62%, 60%);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16,17 21,12 16,7"></polyline>
+                        <line x1="21" x2="9" y1="12" y2="12"></line>
+                    </svg>
+                    Logout
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="transition-all duration-300">
+        <div class="p-6">
+            <!-- Dashboard Title -->
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold mb-2" style="color: hsl(210, 40%, 98%);">LUXVEST</h1>
+                <p class="text-xl mb-4" style="color: hsl(215, 20%, 65%);">Admin Dashboard</p>
+            </div>
+
+            <!-- Moving Text Banner -->
+            <div class="rounded-lg p-4 mb-6 overflow-hidden relative" style="background-color: hsl(222, 84%, 8%);">
+                <div class="marquee whitespace-nowrap font-medium" style="color: hsl(217, 91%, 60%);">
+                    Welcome To Luxvest • Deposit and Withdraw available from 10 AM to 10 PM. Stay with Luxvest!
+                </div>
+            </div>
+
+            <!-- Main Control Buttons -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-4xl mx-auto">
+                <button onclick="openModal('userManagement')" class="border rounded-lg h-auto p-6 hover:scale-105 transition-all text-left" style="background-color: hsl(222, 84%, 8%); border-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                    <div class="flex items-center w-full">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-4" style="color: hsl(217, 91%, 60%);">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="m22 21-3-3m0-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+                        </svg>
+                        <div>
+                            <h3 class="text-lg font-semibold">User Management</h3>
+                            <p style="color: hsl(215, 20%, 65%);">Manage user accounts</p>
+                        </div>
+                    </div>
+                </button>
+
+                <button onclick="openModal('depositControl')" class="border rounded-lg h-auto p-6 hover:scale-105 transition-all text-left" style="background-color: hsl(222, 84%, 8%); border-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                    <div class="flex items-center w-full">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-4 text-green-500">
+                            <path d="M12 5v14"></path>
+                            <path d="m19 12-7 7-7-7"></path>
+                        </svg>
+                        <div>
+                            <h3 class="text-lg font-semibold">Deposit Control</h3>
+                            <p style="color: hsl(215, 20%, 65%);">Handle deposits</p>
+                        </div>
+                    </div>
+                </button>
+
+                <button onclick="openModal('withdrawControl')" class="border rounded-lg h-auto p-6 hover:scale-105 transition-all text-left" style="background-color: hsl(222, 84%, 8%); border-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                    <div class="flex items-center w-full">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-4 text-orange-500">
+                            <path d="M12 19V5"></path>
+                            <path d="m5 12 7-7 7 7"></path>
+                        </svg>
+                        <div>
+                            <h3 class="text-lg font-semibold">Withdraw Control</h3>
+                            <p style="color: hsl(215, 20%, 65%);">Handle withdrawals</p>
+                        </div>
+                    </div>
+                </button>
+
+                <button onclick="openModal('bonusControl')" class="border rounded-lg h-auto p-6 hover:scale-105 transition-all text-left" style="background-color: hsl(222, 84%, 8%); border-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                    <div class="flex items-center w-full">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-4 text-yellow-500">
+                            <rect x="3" y="8" width="18" height="4" rx="1"></rect>
+                            <path d="m12 8-2-2v2H8l4-4 4 4h-2v2Z"></path>
+                            <path d="M14 21v-3a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v3"></path>
+                        </svg>
+                        <div>
+                            <h3 class="text-lg font-semibold">Bonus Control</h3>
+                            <p style="color: hsl(215, 20%, 65%);">Manage bonuses</p>
+                        </div>
+                    </div>
+                </button>
+
+                <button onclick="openModal('workHub')" class="border rounded-lg h-auto p-6 hover:scale-105 transition-all text-left" style="background-color: hsl(222, 84%, 8%); border-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                    <div class="flex items-center w-full">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-4 text-blue-500">
+                            <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                            <rect width="20" height="14" x="2" y="6" rx="2"></rect>
+                        </svg>
+                        <div>
+                            <h3 class="text-lg font-semibold">Work Hub Control</h3>
+                            <p style="color: hsl(215, 20%, 65%);">Manage work hub</p>
+                        </div>
+                    </div>
+                </button>
+
+                <button onclick="openModal('chatControl')" class="border rounded-lg h-auto p-6 hover:scale-105 transition-all text-left" style="background-color: hsl(222, 84%, 8%); border-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                    <div class="flex items-center w-full">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-4 text-purple-500">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <div>
+                            <h3 class="text-lg font-semibold">Chat Control</h3>
+                            <p style="color: hsl(215, 20%, 65%);">Manage chat platforms</p>
+                        </div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Advertisement Slider -->
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-xl font-semibold mb-4" style="color: hsl(210, 40%, 98%);">Company Advertisements</h2>
+                <div class="rounded-lg overflow-hidden relative h-64" style="background-color: hsl(222, 84%, 8%);" id="adSlider">
+                    <div id="slide1" class="absolute inset-0">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=400" alt="Financial Dashboard" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <h3 class="text-2xl font-bold text-white">Advanced Trading Platform</h3>
+                        </div>
+                    </div>
+                    <div id="slide2" class="absolute inset-0 opacity-0">
+                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=400" alt="Business Analytics" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <h3 class="text-2xl font-bold text-white">Professional Investment Tools</h3>
+                        </div>
+                    </div>
+                    <div id="slide3" class="absolute inset-0 opacity-0">
+                        <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=400" alt="Financial Team" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <h3 class="text-2xl font-bold text-white">Expert Financial Advisory</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Background -->
+    <div id="modalBackground" class="fixed inset-0 bg-black/50 z-50 modal-backdrop hidden flex items-center justify-center">
+        <div id="modalContent" class="max-w-4xl max-h-[90vh] w-full mx-4 rounded-lg overflow-hidden" style="background-color: hsl(222, 84%, 8%); color: hsl(210, 40%, 98%);">
+            <div class="p-6 border-b" style="border-color: hsl(217, 32%, 17%);">
+                <div class="flex items-center justify-between">
+                    <h2 id="modalTitle" class="text-xl font-bold">Modal Title</h2>
+                    <button onclick="closeModal()" class="p-2 rounded-md hover:bg-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m18 6-12 12"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="modalBody" class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Demo data
+        const demoUsers = [
+            {
+                id: "user1",
+                name: "Md Fahim",
+                phone: "01733447232",
+                userId: "017***232",
+                bkashAccount: "01733447232",
+                nagadAccount: "01733447232",
+                email: "spc24bd@gmail.com",
+                level: "Elite",
+                referCode: "luxvest01",
+                mainWallet: 10000,
+                registrationDate: "30/08/25",
+                status: "Active"
+            },
+            {
+                id: "user2",
+                name: "Sarah Ahmed",
+                phone: "01833456789",
+                userId: "018***456",
+                bkashAccount: "01833456789",
+                nagadAccount: "01833456789",
+                email: "sarah@example.com",
+                level: "Silver",
+                referCode: "luxvest01",
+                mainWallet: 5500,
+                registrationDate: "25/08/25",
+                status: "Active"
+            },
+            {
+                id: "user3",
+                name: "John Rahman",
+                phone: "01933789012",
+                userId: "019***789",
+                bkashAccount: "01933789012",
+                nagadAccount: "01933789012",
+                email: "john@example.com",
+                level: "Gold",
+                referCode: "luxvest01",
+                mainWallet: 8200,
+                registrationDate: "20/08/25",
+                status: "Active"
+            },
+            {
+                id: "user4",
+                name: "Maria Khan",
+                phone: "01533345678",
+                userId: "015***345",
+                bkashAccount: "01533345678",
+                nagadAccount: "01533345678",
+                email: "maria@example.com",
+                level: "Bronze",
+                referCode: "luxvest01",
+                mainWallet: 2800,
+                registrationDate: "15/08/25",
+                status: "Active"
+            },
+            {
+                id: "user5",
+                name: "Alex Hassan",
+                phone: "01433123456",
+                userId: "014***123",
+                bkashAccount: "01433123456",
+                nagadAccount: "01433123456",
+                email: "alex@example.com",
+                level: "Bronze",
+                referCode: "luxvest01",
+                mainWallet: 0,
+                registrationDate: "10/08/25",
+                status: "Inactive"
+            }
+        ];
+
+        const demoDeposits = [
+            {
+                id: "deposit1",
+                userId: "user1",
+                amount: 5000,
+                method: "Bkash",
+                accountNumber: "0173344232",
+                transactionId: "CHM2PVS92W",
+                status: "Pending",
+                createdAt: "25/12/24 14:30"
+            },
+            {
+                id: "deposit2",
+                userId: "user2",
+                amount: 3000,
+                method: "Nagad",
+                accountNumber: "01833456789",
+                transactionId: "NAG123456",
+                status: "Pending",
+                createdAt: "24/12/24 10:15"
+            }
+        ];
+
+        const demoWithdrawals = [
+            {
+                id: "withdraw1",
+                userId: "user1",
+                amount: 7500,
+                method: "Bkash",
+                accountNumber: "0173344232",
+                status: "Pending",
+                createdAt: "25/12/24 15:45"
+            },
+            {
+                id: "withdraw2",
+                userId: "user4",
+                amount: 4200,
+                method: "Nagad",
+                accountNumber: "01533345678",
+                status: "Pending",
+                createdAt: "24/12/24 11:30"
+            }
+        ];
+
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.add('hidden');
+        }
+
+        // Modal functions
+        function openModal(modalType) {
+            const modalBackground = document.getElementById('modalBackground');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalBackground.classList.remove('hidden');
+            
+            switch(modalType) {
+                case 'userManagement':
+                    modalTitle.textContent = 'User Management';
+                    modalBody.innerHTML = generateUserManagementModal();
+                    break;
+                case 'depositControl':
+                    modalTitle.textContent = 'Deposit Control';
+                    modalBody.innerHTML = generateDepositControlModal();
+                    break;
+                case 'withdrawControl':
+                    modalTitle.textContent = 'Withdraw Control';
+                    modalBody.innerHTML = generateWithdrawControlModal();
+                    break;
+                case 'bonusControl':
+                    modalTitle.textContent = 'Bonus Control';
+                    modalBody.innerHTML = generateBonusControlModal();
+                    break;
+                case 'workHub':
+                    modalTitle.textContent = 'Work Hub Control';
+                    modalBody.innerHTML = generateWorkHubModal();
+                    break;
+                case 'chatControl':
+                    modalTitle.textContent = 'Chat Control';
+                    modalBody.innerHTML = generateChatControlModal();
+                    break;
+                case 'editMarquee':
+                    modalTitle.textContent = 'Edit Moving Text';
+                    modalBody.innerHTML = generateEditMarqueeModal();
+                    break;
+                case 'editSlide':
+                    modalTitle.textContent = 'Edit Slide Box';
+                    modalBody.innerHTML = generateEditSlideModal();
+                    break;
+                case 'changePassword':
+                    modalTitle.textContent = 'Change Password';
+                    modalBody.innerHTML = generateChangePasswordModal();
+                    break;
+                case 'allHistory':
+                    modalTitle.textContent = 'All History';
+                    modalBody.innerHTML = generateHistoryModal();
+                    break;
+                case 'about':
+                    modalTitle.textContent = 'About Company';
+                    modalBody.innerHTML = generateAboutModal();
+                    break;
+            }
+            closeSidebar();
+        }
+
+        function closeModal() {
+            const modalBackground = document.getElementById('modalBackground');
+            modalBackground.classList.add('hidden');
+        }
+
+        // Modal content generators
+        function generateUserManagementModal() {
+            const activeUsers = demoUsers.filter(u => u.status === 'Active');
+            return `
+                <div class="mb-6">
+                    <div class="relative">
+                        <input type="text" placeholder="Search users..." class="w-full pl-10 pr-4 py-2 rounded-md" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style="color: hsl(215, 20%, 65%);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex gap-4 mb-6">
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);">Active Users</button>
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">Inactive Users</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${activeUsers.map(user => `
+                        <div class="rounded-lg p-4 cursor-pointer hover:bg-accent transition-colors" style="background-color: hsl(217, 32%, 17%);" onclick="openUserDetails('${user.id}')">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="px-2 py-1 rounded text-xs font-semibold ${getLevelStyle(user.level)}">${user.level}</span>
+                                <span class="px-2 py-1 rounded text-xs font-semibold bg-green-500 text-white">${user.status}</span>
+                            </div>
+                            <h3 class="font-semibold" style="color: hsl(210, 40%, 98%);">${user.name}</h3>
+                            <p class="text-sm" style="color: hsl(215, 20%, 65%);">User ID: ${user.userId}</p>
+                            <p class="text-sm" style="color: hsl(215, 20%, 65%);">Phone: ${user.phone}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function generateDepositControlModal() {
+            return `
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    ${demoDeposits.map(deposit => {
+                        const user = demoUsers.find(u => u.id === deposit.userId);
+                        return `
+                            <div class="rounded-lg p-3 cursor-pointer hover:bg-accent transition-colors" style="background-color: hsl(217, 32%, 17%);" onclick="openDepositDetails('${deposit.id}')">
+                                <div class="text-center mb-2">
+                                    <div class="text-lg font-bold text-green-500">৳${deposit.amount.toLocaleString()}</div>
+                                    <div class="text-xs" style="color: hsl(215, 20%, 65%);">${deposit.method}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <h3 class="font-semibold text-sm" style="color: hsl(210, 40%, 98%);">${user?.name || 'Unknown User'}</h3>
+                                    <p class="text-xs" style="color: hsl(215, 20%, 65%);">ID: ${user?.userId || 'N/A'}</p>
+                                    <span class="inline-block px-2 py-1 rounded text-xs font-semibold bg-yellow-500 text-black">${deposit.status}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function generateWithdrawControlModal() {
+            return `
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    ${demoWithdrawals.map(withdrawal => {
+                        const user = demoUsers.find(u => u.id === withdrawal.userId);
+                        return `
+                            <div class="rounded-lg p-3 cursor-pointer hover:bg-accent transition-colors" style="background-color: hsl(217, 32%, 17%);" onclick="openWithdrawDetails('${withdrawal.id}')">
+                                <div class="text-center mb-2">
+                                    <div class="text-lg font-bold text-orange-500">৳${withdrawal.amount.toLocaleString()}</div>
+                                    <div class="text-xs" style="color: hsl(215, 20%, 65%);">${withdrawal.method}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <h3 class="font-semibold text-sm" style="color: hsl(210, 40%, 98%);">${user?.name || 'Unknown User'}</h3>
+                                    <p class="text-xs" style="color: hsl(215, 20%, 65%);">ID: ${user?.userId || 'N/A'}</p>
+                                    <span class="inline-block px-2 py-1 rounded text-xs font-semibold bg-yellow-500 text-black">${withdrawal.status}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function generateBonusControlModal() {
+            return `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Select User</label>
+                        <select class="w-full p-2 rounded-md" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                            <option>Select a user...</option>
+                            ${demoUsers.map(user => `<option value="${user.id}">${user.name} - ${user.userId}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Bonus Amount</label>
+                        <input type="number" placeholder="Enter bonus amount" class="w-full p-2 rounded-md" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Bonus Type</label>
+                        <select class="w-full p-2 rounded-md" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                            <option>Select bonus type...</option>
+                            <option>Welcome Bonus</option>
+                            <option>Referral Bonus</option>
+                            <option>Performance Bonus</option>
+                            <option>Special Bonus</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Description</label>
+                        <textarea placeholder="Bonus description..." rows="3" class="w-full p-2 rounded-md resize-none" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);"></textarea>
+                    </div>
+                    <div class="flex gap-4 mt-6">
+                        <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);" onclick="alert('Bonus added successfully!'); closeModal();">Add Bonus</button>
+                        <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);" onclick="closeModal()">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateWorkHubModal() {
+            return `
+                <div class="text-center py-8">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-4" style="color: hsl(217, 91%, 60%);">
+                        <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        <rect width="20" height="14" x="2" y="6" rx="2"></rect>
+                    </svg>
+                    <h3 class="text-xl font-semibold mb-2" style="color: hsl(210, 40%, 98%);">Work Hub Management</h3>
+                    <p class="mb-6" style="color: hsl(215, 20%, 65%);">Manage work assignments and user tasks</p>
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);" onclick="alert('Work Hub configuration coming soon!')">Configure Work Hub</button>
+                </div>
+            `;
+        }
+
+        function generateChatControlModal() {
+            return `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Select Platform</label>
+                        <select class="w-full p-2 rounded-md" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                            <option>Select platform...</option>
+                            <option>Telegram</option>
+                            <option>WhatsApp</option>
+                            <option>Messenger</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Link URL</label>
+                        <input type="url" placeholder="Enter platform link..." class="w-full p-2 rounded-md" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                    </div>
+                    <div class="flex gap-4 mt-6">
+                        <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);" onclick="alert('Chat link updated successfully!'); closeModal();">Submit</button>
+                        <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);" onclick="closeModal()">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function generateEditMarqueeModal() {
+            return `
+                <div>
+                    <label class="block text-sm font-medium mb-2">Moving Text</label>
+                    <textarea rows="3" class="w-full p-2 rounded-md resize-none" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">Welcome To Luxvest • Deposit and Withdraw available from 10 AM to 10 PM. Stay with Luxvest!</textarea>
+                </div>
+                <div class="flex gap-4 mt-6">
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);" onclick="alert('Moving text updated successfully!'); closeModal();">Save</button>
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);" onclick="closeModal()">Cancel</button>
+                </div>
+            `;
+        }
+
+        function generateEditSlideModal() {
+            return `
+                <div class="space-y-4">
+                    ${[1, 2, 3].map(slideNumber => `
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Slide ${slideNumber}</label>
+                            <div class="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:bg-accent/50 transition-colors" style="border-color: hsl(217, 32%, 17%);" onclick="alert('Image upload for slide ${slideNumber} coming soon!')">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2" style="color: hsl(215, 20%, 65%);">
+                                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+                                    <circle cx="12" cy="13" r="3"></circle>
+                                </svg>
+                                <p style="color: hsl(215, 20%, 65%);">Click to upload image</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="flex gap-4 mt-6">
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);" onclick="alert('Slide images updated successfully!'); closeModal();">Save</button>
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);" onclick="closeModal()">Cancel</button>
+                </div>
+            `;
+        }
+
+        function generateChangePasswordModal() {
+            return `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Email</label>
+                        <input type="email" value="admin@luxvest.com" readonly class="w-full p-2 rounded-md" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(215, 20%, 65%);">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">New Password</label>
+                        <input type="password" placeholder="Enter new password" class="w-full p-2 rounded-md" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Confirm Password</label>
+                        <input type="password" placeholder="Confirm new password" class="w-full p-2 rounded-md" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">
+                    </div>
+                    <button class="w-full px-4 py-2 rounded-md" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);" onclick="alert('Email verification required!'); closeModal();">Submit</button>
+                </div>
+            `;
+        }
+
+        function generateHistoryModal() {
+            return `
+                <div class="flex gap-4 mb-6">
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);">Deposit History</button>
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">Withdraw History</button>
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">Rejected History</button>
+                </div>
+                <div class="text-center py-8">
+                    <div style="color: hsl(215, 20%, 65%);">No deposit history found.</div>
+                </div>
+            `;
+        }
+
+        function generateAboutModal() {
+            return `
+                <div>
+                    <label class="block text-sm font-medium mb-2">Company Information</label>
+                    <textarea rows="6" class="w-full p-2 rounded-md resize-none" style="background-color: hsl(217, 32%, 17%); border: 1px solid hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);">LUXVEST is a leading financial technology company providing innovative investment solutions. We offer secure and reliable platforms for digital financial transactions, helping our users achieve their financial goals through advanced technology and professional expertise.</textarea>
+                </div>
+                <div class="flex gap-4 mt-6">
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 91%, 60%); color: hsl(222, 84%, 5%);" onclick="alert('Company information updated successfully!'); closeModal();">Save</button>
+                    <button class="px-4 py-2 rounded-md" style="background-color: hsl(217, 32%, 17%); color: hsl(210, 40%, 98%);" onclick="closeModal()">Cancel</button>
+                </div>
+            `;
+        }
+
+        // Helper functions
+        function getLevelStyle(level) {
+            switch (level) {
+                case "Elite": return "bg-yellow-500 text-black";
+                case "Diamond": return "bg-purple-500 text-white";
+                case "Gold": return "bg-amber-600 text-white";
+                case "Silver": return "bg-gray-500 text-white";
+                case "Bronze": return "bg-orange-600 text-white";
+                default: return "bg-gray-500 text-white";
+            }
+        }
+
+        function openUserDetails(userId) {
+            alert(`Opening user details for user ID: ${userId}`);
+        }
+
+        function openDepositDetails(depositId) {
+            alert(`Opening deposit details for deposit ID: ${depositId}`);
+        }
+
+        function openWithdrawDetails(withdrawId) {
+            alert(`Opening withdraw details for withdraw ID: ${withdrawId}`);
+        }
+
+        function logout() {
+            if (confirm("Are you sure you want to logout?")) {
+                alert("Logging out...");
+            }
+        }
+
+        // Advertisement slider
+        let currentSlide = 0;
+        const slides = ['slide1', 'slide2', 'slide3'];
+
+        function nextSlide() {
+            const currentSlideEl = document.getElementById(slides[currentSlide]);
+            currentSlideEl.style.opacity = '0';
+            
+            currentSlide = (currentSlide + 1) % slides.length;
+            
+            const nextSlideEl = document.getElementById(slides[currentSlide]);
+            nextSlideEl.style.opacity = '1';
+        }
+
+        // Start advertisement slider
+        setInterval(nextSlide, 3000);
+
+        // Close modal on background click
+        document.getElementById('modalBackground').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeSidebar();
+            }
+        });
+    </script>
+</body>
+</html>
